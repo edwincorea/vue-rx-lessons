@@ -25,6 +25,14 @@ export default {
   },
   domStreams: ["click$", "errorImage$"],
   subscriptions() {
+    const cache = {}
+    const cachePerson = cache => 
+      url => {
+        return cache[url] 
+          ? cache[url] 
+          : (cache[url] = createLoader(url))
+      }
+
     const createLoader = url => 
       Observable.from(
         this.$http.get(url)
@@ -52,7 +60,7 @@ export default {
         // error
         // `https://starwars.egghead.trainin/people/${id}`
       )
-      .exhaustMap(createLoader) //waits for the previous request to finish loading
+      .switchMap(cachePerson(cache)) //waits for the previous request to finish loading
       .catch(err => 
         // Observable.of({name: "Failed... :("})
         // try another URL...
