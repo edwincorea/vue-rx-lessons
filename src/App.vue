@@ -29,6 +29,7 @@ export default {
         // try another URL...
         createLoader("https://starwars.egghead.training/people/2")
       )
+      .share() //share RXjs stream for a single request
 
     const name$ = luke$.pluck("name")
     const loadImage$ = luke$
