@@ -2,7 +2,7 @@
   <section class="section">
     {{activeTab$}}
     <b-tabs v-model="activeTab">
-      <b-tab-item v-for="person of people" 
+      <b-tab-item v-for="person of people$" 
         :key="person.id" 
         :label="person.name"></b-tab-item>
     </b-tabs>
@@ -20,31 +20,32 @@ import { Observable } from "rxjs/Rx"
 export default {
   data(){
     return {
-      activeTab: 0,
-      people: [
-        {name: "Luke", id: 1},
-        {name: "Darth", id: 4},
-        {name: "Leia", id: 5},
-        {name: "Yoda", id: 0}
-      ]
+      activeTab: 0
     }
   },
   domStreams: ["click$", "errorImage$"],
   subscriptions() {
-    const activeTab$ = this.$watchAsObservable(
-      "activeTab",
-      { "immediate": true }
-    )
-    .pluck("newValue")
-
     const createLoader = url => 
       Observable.from(
         this.$http.get(url)
       )
       .pluck("data")
+
+    const people$ = createLoader(
+      "https://starwars.egghead.training/people"
+    )
+    .map(people => people.slice(0, 7))
+
+    const activeTab$ = this.$watchAsObservable(
+      "activeTab",
+      { "immediate": true }
+    )
+    .pluck("newValue")
     
-    const luke$ = activeTab$.map(tabId => 
-      this.people[tabId].id)
+    const person$ = activeTab$
+      .combineLatest(
+        people$, 
+        (tabId, people) => people[tabId].id)
       .map(id =>
         // correct
         `https://starwars.egghead.training/people/${id}`
@@ -59,20 +60,8 @@ export default {
       )
       .share() //share RXjs stream for a single request
 
-    // create a disabled stream: [true, false, true, false]
-    const disabled$ = Observable.merge(
-      this.click$.mapTo(true),
-      luke$.mapTo(false)
-    )
-    .startWith(false)
-
-    const buttonText$ = disabled$      
-      .map(bool => 
-        bool ? "Loading..." : "Click"
-      )
-
-    const name$ = luke$.pluck("name")
-    const loadImage$ = luke$
+    const name$ = person$.pluck("name")
+    const loadImage$ = person$
       .pluck("image")
       .map(
         image => 
@@ -82,7 +71,8 @@ export default {
           // `https://starwars.egghead.trainin/${image}`
       )
 
-    const failImage$ = this.errorImage$.mapTo(`http://via.placeholder.com/400x400`)
+    const failImage$ = this.errorImage$
+      .mapTo(`http://via.placeholder.com/400x400`)
 
     const image$ = Observable.merge(
       loadImage$,
@@ -92,10 +82,8 @@ export default {
     return {
       name$,
       image$,
-      disabled$,
-      buttonText$,
-      activeTab$
-
+      activeTab$,
+      people$
     }
   }
 }
