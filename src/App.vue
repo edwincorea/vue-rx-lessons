@@ -23,7 +23,7 @@ export default {
         // error
         // "https://starwars.egghead.trainin/people/1"
       )
-      .switchMap(createLoader)
+      .exhaustMap(createLoader) //waits for the previous request to finish loading
       .catch(err => 
         // Observable.of({name: "Failed... :("})
         // try another URL...
