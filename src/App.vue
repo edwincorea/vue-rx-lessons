@@ -1,6 +1,8 @@
 <template>
   <section class="section">
-    <button class="button" :disabled="disabled$" v-stream:click="click$">{{buttonText$}}</button>
+    <button class="button" :disabled="disabled$" v-stream:click="{subject: click$, data: 1}">{{buttonText$}}</button>
+    <button class="button" :disabled="disabled$" v-stream:click="{subject: click$, data: 4}">{{buttonText$}}</button>
+    <button class="button" :disabled="disabled$" v-stream:click="{subject: click$, data: 5}">{{buttonText$}}</button>
     <h1>{{name$}}</h1>
     <img v-stream:error="errorImage$" :src="image$" :alt="image$">
   </section>
@@ -12,16 +14,19 @@ import { Observable } from "rxjs/Rx"
 export default {
   domStreams: ["click$", "errorImage$"],
   subscriptions() {
-    const createLoader = url => Observable.from(
-      this.$http.get(url)
-    ).pluck("data")
+    const createLoader = url => 
+      Observable.from(
+        this.$http.get(url)
+      )
+      .pluck("data")
     
     const luke$ = this.click$
-      .mapTo(
+      .pluck("data")
+      .map(id =>
         // correct
-        "https://starwars.egghead.training/people/1"
+        `https://starwars.egghead.training/people/${id}`
         // error
-        // "https://starwars.egghead.trainin/people/1"
+        // `https://starwars.egghead.trainin/people/${id}`
       )
       .exhaustMap(createLoader) //waits for the previous request to finish loading
       .catch(err => 
