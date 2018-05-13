@@ -1,7 +1,7 @@
 <template>
   <section class="section">
     <button class="button" v-stream:click="click$">Click</button>
-    <h1>{{people$}}</h1>
+    <h1>{{luke$}}</h1>
   </section>
 </template>
 
@@ -17,11 +17,10 @@ export default {
       )
     ).pluck("data", "name")
     
-    const random$ = this.click$.map(() => Math.random())
+    const luke$ = this.click$.switchMap(() => people$)
     
     return {
-      random$,
-      people$
+      luke$
     }
   }
 }
