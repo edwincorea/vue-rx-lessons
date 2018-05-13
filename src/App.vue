@@ -1,6 +1,7 @@
 <template>
   <section>
-    <h1>{{interval$}}</h1>
+    <h1>{{timesTwo$}}</h1>
+    <h1>{{square$}}</h1>
   </section>
 </template>
 
@@ -8,8 +9,14 @@
 import { Observable } from "rxjs/Rx"
 
 export default {
-  subscriptions: {
-    interval$: Observable.interval(1000)
+  subscriptions(){
+    const interval$ = Observable.interval(1000)
+    const timesTwo$ = interval$.map(i => i * 2)
+    const square$ = interval$.map(i => i * i)
+    return {
+      timesTwo$,
+      square$
+    }
   }
 }
 </script>
