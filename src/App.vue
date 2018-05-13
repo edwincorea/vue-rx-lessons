@@ -1,6 +1,6 @@
 <template>
   <section class="section">
-    <button class="button" v-stream:click="click$">Click</button>
+    <button class="button" :disabled="disabled$" v-stream:click="click$">{{buttonText$}}</button>
     <h1>{{name$}}</h1>
     <img v-stream:error="errorImage$" :src="image$" :alt="image$">
   </section>
@@ -31,6 +31,18 @@ export default {
       )
       .share() //share RXjs stream for a single request
 
+    // create a disabled stream: [true, false, true, false]
+    const disabled$ = Observable.merge(
+      this.click$.mapTo(true),
+      luke$.mapTo(false)
+    )
+    .startWith(false)
+
+    const buttonText$ = disabled$      
+      .map(bool => 
+        bool ? "Loading..." : "Click"
+      )
+
     const name$ = luke$.pluck("name")
     const loadImage$ = luke$
       .pluck("image")
@@ -51,7 +63,9 @@ export default {
     
     return {
       name$,
-      image$
+      image$,
+      disabled$,
+      buttonText$
     }
   }
 }
