@@ -12,15 +12,13 @@ import { Observable } from "rxjs/Rx"
 export default {
   domStreams: ["click$", "errorImage$"],
   subscriptions() {
-    const person$ = Observable.from(
-      this.$http.get(
-        "https://starwars.egghead.training/people/1"
-      )
+    const createLoader = url => Observable.from(
+      this.$http.get(url)
     ).pluck("data")
     
-    const luke$ = this.click$.switchMap(
-      () => person$
-    )
+    const luke$ = this.click$
+      .mapTo("https://starwars.egghead.training/people/1")
+      .switchMap(createLoader)
 
     const name$ = luke$.pluck("name")
     const loadImage$ = luke$
